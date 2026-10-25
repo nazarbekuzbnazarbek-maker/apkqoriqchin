@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rico Guard Security</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glow { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col justify-between p-4">
+
+    <!-- Header -->
+    <div class="text-center my-4">
+        <div class="inline-block bg-red-950 border border-red-600 rounded-full p-3 glow">
+            <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m0-6a4 4 0 118 0v4h1a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2h1V9a4 4 0 014-4z"></path>
+            </svg>
+        </div>
+        <h1 class="text-2xl font-black text-red-500 mt-2 tracking-wider">RICO GUARD</h1>
+        <p class="text-xs text-gray-400">Telegram & Device Threat Protection</p>
+    </div>
+
+    <!-- Status Box -->
+    <div id="status-card" class="bg-gray-900 border border-gray-800 rounded-2xl p-5 text-center">
+        <h2 class="text-sm font-bold text-gray-400">HIMOYA HOLATI</h2>
+        <p id="status-text" class="text-xl font-extrabold text-green-400 mt-1">FAOL (MONITORING)</p>
+        <p class="text-xs text-gray-500 mt-2">Shubhali APK yoki skriptlar real vaqtda skanerlanmoqda.</p>
+    </div>
+
+    <!-- Actions / Scanner Test -->
+    <div class="space-y-3">
+        <label class="block bg-gray-900 border border-red-900/40 hover:border-red-500 text-center p-4 rounded-xl cursor-pointer transition glow">
+            <span class="text-sm font-semibold text-red-400">Faylni Skonerdan O'tkazish (.apk, .exe)</span>
+            <input type="file" id="file-input" class="hidden">
+        </label>
+        
+        <div id="result-box" class="hidden p-4 rounded-xl border text-sm font-mono"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-xs text-gray-600">
+        Rico Guard Engine v1.0 • Protected System
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const resultBox = document.getElementById('result-box');
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            resultBox.classList.remove('hidden');
+            resultBox.className = "p-4 rounded-xl border border-yellow-600 bg-yellow-950/30 text-yellow-400 font-mono text-sm";
+            resultBox.innerText = "Fayl tahlil qilinmoqda...";
+
+            try {
+                // Serverga faylni tekshirishga yuborish
+                const res = await fetch('http://127.0.0.1:8000/scan-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.is_threat) {
+                    resultBox.className = "p-4 rounded-xl border border-red-600 bg-red-950/40 text-red-400 font-mono text-sm glow";
+                    resultBox.innerHTML = `⚠️ <b>XAVF ANIQLANDI!</b><br>Fayl: ${data.filename}<br>Xavf darajasi: ${data.risk_score}%<br>Buyruq: ${data.action}`;
+                } else {
+                    resultBox.className = "p-4 rounded-xl border border-green-600 bg-green-950/40 text-green-400 font-mono text-sm";
+                    resultBox.innerHTML = `✅ <b>TOZA</b><br>Fayl: ${data.filename}<br>Xavfsiz foydalanish mumkin.`;
+                }
+            } catch (err) {
+                resultBox.className = "p-4 rounded-xl border border-red-800 bg-gray-900 text-red-400 text-sm";
+                resultBox.innerText = "Serverga ulanishda xatolik!";
+            }
+        });
+    </script>
+</body>
+</html>
